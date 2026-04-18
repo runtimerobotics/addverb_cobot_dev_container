@@ -2,6 +2,17 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+IMAGE="therobocademy/addverb_cobot:latest"
+
+# Use pre-built image if available locally; otherwise pull, then fall back to local build
+if docker image inspect "$IMAGE" &>/dev/null; then
+    echo "Using local image: $IMAGE"
+elif docker pull "$IMAGE" 2>/dev/null; then
+    echo "Pulled image: $IMAGE"
+else
+    echo "Image not available remotely — building locally..."
+    docker build -t "$IMAGE" "$SCRIPT_DIR"
+fi
 
 xhost +local:docker
 
@@ -23,4 +34,4 @@ docker run \
   -v /dev:/dev \
   -v "${SCRIPT_DIR}/robot_network_config:/robot_network_config" \
   -v "${SCRIPT_DIR}:/workspaces/cobot_dev:cached" \
-  cobot:deploy
+  "$IMAGE"
