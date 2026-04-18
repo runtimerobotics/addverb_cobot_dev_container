@@ -1,98 +1,53 @@
-# Bootcamp: Robotics and AI for Beginners with ROS 2 & NVIDIA Isaac
+# Cobot ROS 2 Humble Dev Container
 
-This repository has docker compose files to get started with the [bootcamp](https://robocademy.com/courses/robotics-ai-from-scratch-ros-2-nvidia-isaac-bootcamp-696f2d1461b5f31af9b9fd95)
+Docker-based development environment for the Addverb cobot — ROS 2 Humble on Ubuntu 22.04 with MoveIt 2, Nav2, Gazebo Classic, and `ros2_control`.
 
-## Table of Contents
+## Repository Structure
 
-- [System Prerequisites](#system-prerequisites)
-- [Optional: Native Install (Isaac Sim + ROS 2)](#optional-native-install-isaac-sim--ros-2)
-- [Docker Installation](#docker-installation)
-- [Cloud Setup using Vast.ai (Ubuntu 22.04 Desktop VM with GPU)](#cloud-setup-using-vastai-ubuntu-2204-desktop-vm-with-gpu)
-- [Download Workshop Docker Image](#download-workshop-docker-image)
-- [Start Docker Compose (GUI Enabled)](#start-docker-compose-gui-enabled)
-- [Open in Dev Container (VS Code / Cursor)](#open-in-dev-container-vs-code--cursor)
+```
+cobot_dev_container/
+├── Dockerfile                  # Builds the cobot:deploy image
+├── docker-compose.yml          # Compose service: cobot / cobot-humble
+├── run.sh                      # Quick docker run wrapper (X11 + GPU)
+├── .devcontainer/
+│   └── devcontainer.json       # VS Code / Cursor Dev Container config
+├── scripts/
+│   └── build_workspace.sh      # Rebuild cobot_ros2_ws inside container
+├── robot_network_config/
+│   └── ip.csv                  # Robot network IP configuration
+└── setup_docker_ubuntu.sh      # One-shot Docker install script (Ubuntu)
+```
 
 ## System Prerequisites
 
-For a local setup, use a machine with:
-- Ubuntu 22.04 or Ubuntu 24.04
-- NVIDIA RTX 3050 or better
-- More than 6 GB GPU VRAM
-
-If you are using Windows or macOS and do not have a compatible local Linux + NVIDIA setup, you can use a cloud GPU service such as [vast.ai](https://vast.ai/).
-
-## Optional: Native Install (Isaac Sim + ROS 2)
-
-Use this section if you want to install Isaac Sim manually and install ROS 2 directly on your Ubuntu system (outside Docker).
-
-### Download Isaac Sim (Manual)
-
-Download Isaac Sim using this link: <a href="https://docs.isaacsim.omniverse.nvidia.com/5.1.0/installation/quick-install.html" target="_blank" rel="noopener noreferrer">Doc</a>
-
-https://download.isaacsim.omniverse.nvidia.com/isaac-sim-standalone-5.1.0-linux-x86_64.zip
-
-After downloading, extract it:
-
-```bash
-unzip isaac-sim-standalone-5.1.0-linux-x86_64.zip
-```
-
-### Install ROS 2 with One-Line Script
-
-Repository:
-
-https://github.com/runtimerobotics/ros2_oneline_install
-
-Install ROS 2 Jazzy:
-
-```bash
-wget -c https://raw.githubusercontent.com/runtimerobotics/ros2_oneline_install/main/ros2_install_jazzy.sh && chmod +x ./ros2_install_jazzy.sh && ./ros2_install_jazzy.sh
-```
-
-Install ROS 2 Humble:
-
-```bash
-wget -c https://raw.githubusercontent.com/runtimerobotics/ros2_oneline_install/main/ros2_install_humble.sh && chmod +x ./ros2_install_humble.sh && ./ros2_install_humble.sh
-```
+- Ubuntu 22.04 or 24.04 (or Windows 11/10 via WSL2)
+- NVIDIA GPU with drivers installed (`nvidia-smi` should work)
+- Docker with NVIDIA Container Toolkit
 
 ## Docker Installation
 
-This section explains how to install Docker so you can run the bootcamp containers.
-For Ubuntu, a script is provided for automatic installation.
-For Windows, follow the WSL + Docker Desktop steps.
-For Vast.ai Ubuntu Desktop VM, Docker is already pre-installed.
-
-### Ubuntu 24.04 and 22.04
-
-Run the setup script (automatic installation):
+### Ubuntu 22.04 / 24.04
 
 ```bash
-wget https://raw.githubusercontent.com/therobocademy/ros2_nvidia_isaac_bootcamp/refs/heads/main/setup_docker_ubuntu.sh && chmod +x setup_docker_ubuntu.sh && sudo ./setup_docker_ubuntu.sh
+wget https://raw.githubusercontent.com/therobocademy/ros2_nvidia_isaac_bootcamp/refs/heads/main/setup_docker_ubuntu.sh
+chmod +x setup_docker_ubuntu.sh
+sudo ./setup_docker_ubuntu.sh
 ```
 
-Manual installation video for Ubuntu 24.04:
+Or use the script included in this repo:
 
-<p align="center">
-  <a href="https://youtu.be/FWWq83IGUgw" target="_blank" rel="noopener noreferrer">
-    <img src="https://img.youtube.com/vi/FWWq83IGUgw/hqdefault.jpg" alt="Docker install on Ubuntu 24.04" width="640" />
-  </a>
-</p>
-
-Manual installation video for Ubuntu 22.04:
-
-<p align="center">
-  <a href="https://youtu.be/EuSVD7kVCUY" target="_blank" rel="noopener noreferrer">
-    <img src="https://img.youtube.com/vi/EuSVD7kVCUY/hqdefault.jpg" alt="Docker install on Ubuntu 22.04" width="640" />
-  </a>
-</p>
+```bash
+sudo ./setup_docker_ubuntu.sh
+```
 
 Verify:
 
 ```bash
 docker --version
+docker run --rm --gpus all nvidia/cuda:12.0-base-ubuntu22.04 nvidia-smi
 ```
 
-### Windows 11/10 (WSL + Docker Desktop)
+### Windows 11/10 (WSL2 + Docker Desktop)
 
 1. Install WSL (Ubuntu 24.04) in PowerShell (as Administrator):
 
@@ -100,232 +55,118 @@ docker --version
 wsl --install -d Ubuntu-24.04
 ```
 
-2. Install Docker Desktop:
-https://www.docker.com/products/docker-desktop/
+2. Install Docker Desktop: https://www.docker.com/products/docker-desktop/
 
-3. In Docker Desktop, enable:
-`Settings -> Resources -> WSL Integration -> Ubuntu-24.04`
+3. In Docker Desktop enable: `Settings → Resources → WSL Integration → Ubuntu-24.04`
 
-4. Verify:
+## Pull the Docker Image
 
 ```bash
-docker --version
+docker pull therobocademy/cobot_dev_container:latest
 ```
 
-Windows 11 video:
+## Running the Container
 
-<p align="center">
-  <a href="https://youtu.be/fsR8fj7iCNY" target="_blank" rel="noopener noreferrer">
-    <img src="https://img.youtube.com/vi/fsR8fj7iCNY/hqdefault.jpg" alt="Docker setup on Windows 11" width="640" />
-  </a>
-</p>
+### Option 1: run.sh (recommended for Linux)
 
-Windows 10 video:
-
-<p align="center">
-  <a href="https://youtu.be/kv2oQeg6MdE" target="_blank" rel="noopener noreferrer">
-    <img src="https://img.youtube.com/vi/kv2oQeg6MdE/hqdefault.jpg" alt="Docker setup on Windows 10" width="640" />
-  </a>
-</p>
-
-## Cloud Setup using Vast.ai (Ubuntu 22.04 Desktop VM with GPU)
-
-If you do not have a compatible local Linux + NVIDIA GPU, you can rent a cloud GPU using [Vast.ai](https://cloud.vast.ai/?ref_id=374137) and use the pre-configured Ubuntu Desktop VM template (GUI + Docker already installed).
-
-### Step 1: Create a Vast.ai Account
-
-Sign up at Vast.ai and add credits.
-
-### Step 2: Choose Instance
-
-- GPU: RTX 3060 / 3090 / A5000 or better
-- VRAM: Minimum 12 GB (16+ GB recommended)
-- Disk: >= 50 GB
-
-### Step 3: Select Template
-
-- Select **Ubuntu Desktop (VM)**
-- This template includes GUI, NVIDIA drivers, and Docker pre-installed
-
-### Step 4: Access Desktop via VNC (No SSH Required)
-
-- Open Vast.ai dashboard
-- Click your running instance
-- Click **Open**
-- This launches the Ubuntu Desktop in your browser (VNC/Web Desktop)
-- Login password is often `password`; check the template README to confirm the current credentials.
-
-### Step 5: Verify GPU inside Desktop Terminal
+Enables X11 GUI forwarding and GPU access in one command:
 
 ```bash
-nvidia-smi
+./run.sh
 ```
 
-**Note:** Docker is already installed in the Ubuntu Desktop VM template. No installation needed.
+This runs the container as user `robot` with:
+- Full GPU access (`--gpus all`)
+- Host networking
+- X11 socket mounted for GUI apps (RViz2, Gazebo, etc.)
+- `robot_network_config/` mounted at `/robot_network_config`
+- This repo mounted at `/workspaces/cobot_dev`
 
-## Download Workshop Docker Image
-
-Run the following command in the terminal of the environment where you will run the workshop:
-- Local Ubuntu PC terminal, OR
-- Vast.ai Ubuntu Desktop VM terminal (inside the VNC desktop)
-
-```bash
-docker pull therobocademy/ros2_nvidia_workshop:latest
-```
-
-Important: If you are using Vast.ai, open the Ubuntu Desktop (VNC), then open Terminal and run the `docker pull` command there. Do not run it on your local PC if you plan to run the container inside the Vast.ai VM.
-
-## Start Docker Compose (GUI Enabled)
-
-The compose file supports Linux and Windows (WSL) GUI forwarding.
-
-### Ubuntu 22.04 / 24.04 (X11)
-
-From your host terminal:
+### Option 2: Docker Compose
 
 ```bash
-sudo apt update
-sudo apt install -y git
-
-git clone https://github.com/therobocademy/ros2_nvidia_isaac_bootcamp.git
-
-cd ros2_nvidia_isaac_bootcamp
-
+# Linux — allow X11 first
 xhost +local:docker
-
 export DISPLAY=${DISPLAY:-:0}
-export DOCKER_NETWORK_MODE=host
 
-mkdir -p ~/docker/isaac-sim/cache/{kit,ov,pip,glcache,computecache} ~/docker/isaac-sim/{logs,data,documents}
-
-docker compose up workshop
-```
-In Terminal 2 (For taking a new terminal for Docker container)
-
-```
-docker exec -it isaac-sim bash
+docker compose up -d
 ```
 
-### Vast.ai Ubuntu Desktop VM (VNC Desktop)
-
-Open Terminal inside the Vast.ai Ubuntu Desktop (in browser VNC), then run:
+Attach a shell:
 
 ```bash
-sudo apt update
-sudo apt install -y git
-
-git clone https://github.com/therobocademy/ros2_nvidia_isaac_bootcamp.git
-
-cd ros2_nvidia_isaac_bootcamp
-
-xhost +local:docker
-
-export DISPLAY=${DISPLAY:-:0}
-export DOCKER_NETWORK_MODE=host
-
-mkdir -p ~/docker/isaac-sim/cache/{kit,ov,pip,glcache,computecache} ~/docker/isaac-sim/{logs,data,documents}
-
-docker compose up workshop
-```
-In Terminal 2 (For taking a new terminal for Docker container)
-
-```
-docker exec -it isaac-sim bash
+docker exec -it cobot-humble bash -l
 ```
 
-### Windows 11/10 (WSL2 + Docker Desktop)
-
-1. Start an X server on Windows (VcXsrv/X410) with access control disabled (or allow your WSL IP).
-2. Run these commands in Ubuntu WSL terminal:
+Stop:
 
 ```bash
-sudo apt update
-sudo apt install -y git
-
-git clone https://github.com/therobocademy/ros2_nvidia_isaac_bootcamp.git
-
-cd ros2_nvidia_isaac_bootcamp
-
-unset DISPLAY
-unset DOCKER_NETWORK_MODE
-
-mkdir -p ~/docker/isaac-sim/cache/{kit,ov,pip,glcache,computecache} ~/docker/isaac-sim/{logs,data,documents}
-
-docker compose up workshop
-docker exec -it isaac-sim bash
+docker compose down
 ```
 
-Notes for Windows:
-- Compose defaults `DISPLAY` to `host.docker.internal:0.0` when `DISPLAY` is unset.
-- Start Docker Desktop before `docker compose up`.
-- Keep WSL integration enabled for your Ubuntu distro.
+### Windows (WSL2)
 
-Then launch your GUI app inside the container (for example, `rviz2` or Isaac Sim command used in the workshop).
-
-## Possible Issues
-
-If you see:
-
-```text
-Failed to create texture cache in /isaac-sim/.cache/ov/texturecache
-Failed to create texture cache folder /isaac-sim/.cache/ov/texturecache
-```
-
-Run:
+Start an X server on Windows (VcXsrv or X410) with access control disabled, then from the WSL terminal:
 
 ```bash
-chmod -R 777 ~/docker/isaac-sim
+unset DISPLAY   # compose defaults to host.docker.internal:0.0
+docker compose up -d
+docker exec -it cobot-humble bash -l
 ```
+
 ## Open in Dev Container (VS Code / Cursor)
 
-This repository also includes a ready-to-use Dev Container at `.devcontainer/devcontainer.json`.
-It reuses the existing `docker-compose.yml` service, including:
+The `.devcontainer/devcontainer.json` is pre-configured to use `docker-compose.yml`.
 
-- NVIDIA GPU access
-- X11 GUI forwarding
-- Isaac Sim cache/data mounts
-- The repository mounted at `/home/isaac-sim/workspaces`
-
-### Linux Host (Ubuntu / Vast.ai Desktop)
-
-Before opening the Dev Container, allow local Docker containers to use your X server:
+### Linux
 
 ```bash
 xhost +local:docker
 export DISPLAY=${DISPLAY:-:0}
 ```
 
-Then open the folder in VS Code or Cursor and choose:
+Then open this folder in VS Code / Cursor and choose **Dev Containers: Reopen in Container**.
 
-- `Dev Containers: Reopen in Container`
+Pre-installed VS Code extensions:
+- ROS (`ms-iot.vscode-ros`)
+- Python, C/C++, CMake, clang-format
 
-The Dev Container mounts your host X11 socket and `~/.Xauthority`, so GUI apps launched inside the container can open on your desktop.
+### Windows (WSL2)
 
-Start Isaac Sim in GUI mode from inside the container with:
+Start your X server, then reopen the folder in the Dev Container from VS Code.
 
-```bash
-./scripts/launch_isaac_sim.sh
-```
+## Inside the Container
 
-### Windows with WSL2
+The ROS 2 workspace is at `~/cobot_ros2_ws`. It is sourced automatically in every login shell via `/etc/profile.d/ros2.sh`.
 
-Start your Windows X server first (VcXsrv/X410), then from the WSL terminal set:
-
-```bash
-export DISPLAY=${DISPLAY:-host.docker.internal:0.0}
-```
-
-Then reopen the project in the Dev Container from VS Code / Cursor.
-
-If you want streaming or a no-display workflow instead of a desktop window, launch:
+### Rebuild the workspace
 
 ```bash
-./scripts/launch_isaac_sim_headless.sh
+/workspaces/cobot_dev/scripts/build_workspace.sh
 ```
 
-### Notes
+Or manually:
 
-- If GUI apps fail to open on Linux, run `xhost +local:docker` again on the host and reopen the container.
-- The Dev Container uses the same `workshop` service as Docker Compose, so command-line and editor workflows stay aligned.
-- Isaac Sim headless mode does not create a normal desktop window. Messages like `Cannot set window title without a default window` mean Kit started without a GUI window, which is expected for headless mode and a sign to use `./scripts/launch_isaac_sim.sh` if you wanted the desktop app.
-# addverb_cobot_dev_container
+```bash
+source /opt/ros/humble/setup.bash
+cd ~/cobot_ros2_ws
+colcon build --symlink-install
+source install/setup.bash
+```
+
+### Robot network config
+
+Edit `robot_network_config/ip.csv` on the host — it is mounted live into the container at `/robot_network_config/ip.csv`.
+
+## What's Inside the Image
+
+| Component | Version / Package |
+|---|---|
+| ROS 2 | Humble (desktop-full) |
+| MoveIt 2 | `ros-humble-moveit` |
+| Nav2 | `ros-humble-navigation2` |
+| Gazebo | Classic 11 (`ros-humble-gazebo-ros-pkgs`) |
+| ros2_control | full stack |
+| UR robot | `ros-humble-ur` |
+| User | `robot` (passwordless sudo) |
+| Cobot backend | cloned to `/opt/addverb/cobot_backend` |
