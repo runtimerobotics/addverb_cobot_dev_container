@@ -62,7 +62,7 @@ wsl --install -d Ubuntu-24.04
 ## Pull the Docker Image
 
 ```bash
-docker pull therobocademy/cobot_dev_container:latest
+docker pull therobocademy/addverb_cobot:latest
 ```
 
 ## Running the Container
