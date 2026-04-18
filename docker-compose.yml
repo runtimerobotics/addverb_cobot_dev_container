@@ -1,0 +1,30 @@
+services:
+  cobot:
+    build: .
+    image: cobot:deploy
+    container_name: cobot-humble
+    entrypoint: bash
+    command: -lc "sleep infinity"
+    network_mode: host
+    privileged: true
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    stdin_open: true
+    tty: true
+    environment:
+      # Linux: export DISPLAY and run xhost +local:docker before starting
+      # Windows/WSL: leave DISPLAY unset to use host.docker.internal:0.0 (VcXsrv/X410)
+      - DISPLAY=${DISPLAY:-host.docker.internal:0.0}
+      - QT_X11_NO_MITSHM=1
+      - LIBGL_ALWAYS_INDIRECT=0
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /dev:/dev
+      - ./robot_network_config:/robot_network_config
+      - .:/workspaces/cobot_dev:cached

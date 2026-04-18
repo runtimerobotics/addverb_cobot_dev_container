@@ -1,0 +1,45 @@
+{
+    "name": "Cobot ROS 2 Humble",
+    "dockerComposeFile": "../docker-compose.yml",
+    "service": "cobot",
+    "workspaceFolder": "/workspaces/cobot_dev",
+    "remoteUser": "robot",
+    "overrideCommand": true,
+
+    // Key ROS 2 environment variables available to all VSCode processes,
+    // not just interactive terminals. Sourcing setup.bash is handled by
+    // /etc/profile.d/ros2.sh for interactive shells.
+    "containerEnv": {
+        "ROS_DISTRO": "humble",
+        "ROS_DOMAIN_ID": "0",
+        "RMW_IMPLEMENTATION": "rmw_fastrtps_cpp",
+        "DISPLAY": "${localEnv:DISPLAY}",
+        "QT_X11_NO_MITSHM": "1",
+        "LIBGL_ALWAYS_INDIRECT": "0"
+    },
+
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-iot.vscode-ros",
+                "ms-python.python",
+                "ms-vscode.cpptools-extension-pack",
+                "twxs.cmake",
+                "ms-vscode.cmake-tools",
+                "xaver.clang-format"
+            ],
+            "settings": {
+                "ros.distro": "humble",
+                // Use login shell so /etc/profile.d/ros2.sh is sourced in every terminal
+                "terminal.integrated.defaultProfile.linux": "bash",
+                "terminal.integrated.profiles.linux": {
+                    "bash": {
+                        "path": "/bin/bash",
+                        "args": ["-l"]
+                    }
+                },
+                "cmake.configureOnOpen": false
+            }
+        }
+    }
+}
