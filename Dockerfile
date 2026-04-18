@@ -112,7 +112,7 @@ WORKDIR /home/robot
 # Per README: https://github.com/HumanoidAddverb/cobot_ros2
 RUN mkdir -p ~/cobot_ros2_ws/src && \
     cd ~/cobot_ros2_ws/src && \
-    git clone --depth=1 https://github.com/HumanoidAddverb/cobot_ros2.git && \
+    git clone --depth=1 --branch heal https://github.com/HumanoidAddverb/cobot_ros2.git && \
     sudo cp -r cobot_ros2/cobot_backend /opt/addverb/ && \
     rm -rf cobot_ros2/cobot_backend
 
