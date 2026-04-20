@@ -65,6 +65,14 @@ wsl --install -d Ubuntu-24.04
 docker pull therobocademy/addverb_cobot:latest
 ```
 
+## Build the Image Manually
+
+The Docker Compose file only loads a pre-built image and will never build from source. To build the image locally from the `Dockerfile`:
+
+```bash
+docker build -t therobocademy/addverb_cobot:latest .
+```
+
 ## Running the Container
 
 ### Option 1: run.sh (recommended for Linux)

@@ -93,7 +93,7 @@ ENV RMW_IMPLEMENTATION=rmw_fastrtps_cpp
 RUN printf '%s\n' \
     '#!/bin/bash' \
     'source /opt/ros/humble/setup.bash' \
-    '[ -f /home/robot/cobot_ros2_ws/install/setup.bash ] && source /home/robot/cobot_ros2_ws/install/setup.bash' \
+    '[ -f /home/robot/cobot_ros2ws/install/setup.bash ] && source /home/robot/cobot_ros2ws/install/setup.bash' \
     > /etc/profile.d/ros2.sh && \
     chmod +x /etc/profile.d/ros2.sh
 
@@ -108,16 +108,17 @@ RUN mkdir -p /opt/addverb
 USER robot
 WORKDIR /home/robot
 
-# Clone cobot_ros2, install backend to /opt/addverb, then build workspace
-# Per README: https://github.com/HumanoidAddverb/cobot_ros2
-RUN mkdir -p ~/cobot_ros2_ws/src && \
-    cd ~/cobot_ros2_ws/src && \
+# Clone from GitHub to extract backend, then copy local cobot_ros2 as the build source
+RUN mkdir -p ~/cobot_ros2ws/src && \
+    cd ~/cobot_ros2ws/src && \
     git clone --depth=1 --branch heal https://github.com/HumanoidAddverb/cobot_ros2.git && \
     sudo cp -r cobot_ros2/cobot_backend /opt/addverb/ && \
-    rm -rf cobot_ros2/cobot_backend
+    rm -rf cobot_ros2
+
+COPY --chown=robot:robot cobot_ros2 /home/robot/cobot_ros2ws/src/cobot_ros2
 
 RUN source /opt/ros/humble/setup.bash && \
-    cd ~/cobot_ros2_ws && \
+    cd ~/cobot_ros2ws && \
     rosdep update && \
     rosdep install --from-paths src --ignore-src --rosdistro humble -r -y \
       --skip-keys "warehouse_ros_mongo haptic_pkg" && \
@@ -126,7 +127,7 @@ RUN source /opt/ros/humble/setup.bash && \
 RUN printf '%s\n' \
     '# ROS 2 Humble' \
     'source /opt/ros/humble/setup.bash' \
-    '[ -f ~/cobot_ros2_ws/install/setup.bash ] && source ~/cobot_ros2_ws/install/setup.bash' \
+    '[ -f ~/cobot_ros2ws/install/setup.bash ] && source ~/cobot_ros2ws/install/setup.bash' \
     'export ROS_DOMAIN_ID=0' \
     >> ~/.bashrc
 
